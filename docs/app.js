@@ -166,8 +166,12 @@ function renderAdmin(rows) {
   adminRows = rows || [];
   const attendingGuests = adminRows.reduce((sum, row) => sum + guestCount(row), 0);
   const declined = adminRows.filter((row) => row.attending === 'no').length;
+  const vegetarian = adminRows.reduce((sum, row) => sum + (row.attending === 'yes' && row.meal === 'vegetarian' ? guestCount(row) : 0), 0);
+  const nonVegetarian = adminRows.reduce((sum, row) => sum + (row.attending === 'yes' && row.meal === 'non-vegetarian' ? guestCount(row) : 0), 0);
   $('#count-attending').textContent = attendingGuests;
   $('#count-declined').textContent = declined;
+  $('#count-veg').textContent = vegetarian;
+  $('#count-nonveg').textContent = nonVegetarian;
   $('#count-total').textContent = adminRows.length;
   $('#admin-empty').textContent = adminRows.length
     ? `${adminRows.length} replies received so far. ${attendingGuests} attending guests are expected.`
