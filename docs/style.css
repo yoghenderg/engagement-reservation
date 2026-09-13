@@ -33,3 +33,13 @@ h1:focus,h2:focus{outline:0}.form-heading h2:focus-visible,.thank-card h2:focus-
 /* Keep the main invitation header in normal page flow on every screen. */
 .shell>header{position:relative!important;top:auto!important;z-index:auto!important}
 .shell>header:after{content:none!important}
+/* Admin summary cards: beige invitation-card treatment with maroon text. */
+.admin-cards article{background:#f3e3ca!important;border-color:#d5ad75!important;color:#681c2d!important;box-shadow:0 18px 50px #2d061430}
+.admin-cards span{color:#7d3140!important}
+.admin-cards strong{color:#681c2d!important}
+@media(max-width:760px){
+  .admin-tabs,
+  #admin-table{display:none!important}
+  #admin-summary{display:block!important}
+  .admin-cards article{box-shadow:0 10px 28px #2d06142b}
+}
