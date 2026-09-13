@@ -43,3 +43,9 @@ h1:focus,h2:focus{outline:0}.form-heading h2:focus-visible,.thank-card h2:focus-
   #admin-summary{display:block!important}
   .admin-cards article{box-shadow:0 10px 28px #2d06142b}
 }
+/* Mobile header balance: center Vanakkam against the screen, not between unequal side items. */
+@media(max-width:760px){
+  .shell>header{position:relative!important}
+  .brand,.header-heart{position:relative;z-index:2}
+  .header-note{position:absolute;left:50%;transform:translateX(-50%);justify-content:center;text-align:center;white-space:nowrap;max-width:58vw;z-index:1}
+}
