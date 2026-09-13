@@ -206,6 +206,36 @@ async function loadAdmin(push = true) {
   }
 }
 
+
+function mobileKeyboardField(el) {
+  return el && window.matchMedia('(max-width: 760px)').matches && (el.matches('input:not([type=radio]), select, textarea'));
+}
+
+function keepFieldVisible(el) {
+  if (!mobileKeyboardField(el)) return;
+  const target = el.closest('.field, fieldset') || el;
+  const run = () => target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+  setTimeout(run, 80);
+  setTimeout(run, 320);
+  setTimeout(run, 650);
+}
+
+document.addEventListener('focusin', (e) => {
+  if (!mobileKeyboardField(e.target)) return;
+  document.body.classList.add('keyboard-open');
+  keepFieldVisible(e.target);
+});
+
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    if (!mobileKeyboardField(document.activeElement)) document.body.classList.remove('keyboard-open');
+  }, 120);
+});
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => keepFieldVisible(document.activeElement));
+}
+
 function setAdminTab(tab) {
   const table = tab === 'table';
   $('#admin-summary').hidden = table;

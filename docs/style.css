@@ -66,3 +66,11 @@ html,body{overflow-x:hidden}
     body:has(.reservation:not([hidden])) .veil{height:100dvh}
   }
 }
+/* While typing on mobile Safari, remove tall decorative content so the active field stays visible. */
+@media(max-width:760px){
+  body.keyboard-open:has(.reservation:not([hidden])) .shell{padding-top:0!important}
+  body.keyboard-open:has(.reservation:not([hidden])) header,
+  body.keyboard-open:has(.reservation:not([hidden])) .form-heading{display:none!important}
+  body.keyboard-open:has(.reservation:not([hidden])) .reservation{margin:0 auto 10px!important;padding-top:12px!important;border-radius:0 0 22px 22px}
+  body.keyboard-open:has(.reservation:not([hidden])) .form-top{margin-bottom:14px;padding-bottom:12px}
+}
