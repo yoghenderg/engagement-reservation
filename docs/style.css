@@ -74,3 +74,9 @@ html,body{overflow-x:hidden}
   body.keyboard-open:has(.reservation:not([hidden])) .reservation{margin:0 auto 10px!important;padding-top:12px!important;border-radius:0 0 22px 22px}
   body.keyboard-open:has(.reservation:not([hidden])) .form-top{margin-bottom:14px;padding-bottom:12px}
 }
+/* Let the couple photo show through the landing event card more on mobile. */
+@media(max-width:760px){
+  .landing .event-details{background:rgba(224,196,150,.68)!important;border-color:rgba(213,173,117,.78);outline-color:rgba(213,173,117,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  .landing .event-date strong,.landing .event-venue strong{color:#5b1426}
+  .landing .event-date span,.landing .event-venue p{color:#6d302d}
+}
