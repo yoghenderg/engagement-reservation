@@ -49,3 +49,20 @@ h1:focus,h2:focus{outline:0}.form-heading h2:focus-visible,.thank-card h2:focus-
   .brand,.header-heart{position:relative;z-index:2}
   .header-note{position:absolute;left:50%;transform:translateX(-50%);justify-content:center;text-align:center;white-space:nowrap;max-width:58vw;z-index:1}
 }
+/* Mobile keyboard hardening for Safari/iOS and Android browsers. */
+html,body{overflow-x:hidden}
+@media(max-width:760px){
+  body:has(.reservation:not([hidden])) .shell{min-height:auto;display:block;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+  body:has(.reservation:not([hidden])) main{display:block;min-height:auto}
+  body:has(.reservation:not([hidden])) footer{display:none!important}
+  body:has(.reservation:not([hidden])) .reservation{margin:14px auto 18px!important;padding-bottom:18px!important}
+  body:has(.reservation:not([hidden])) #rsvp{padding-bottom:0!important}
+  body:has(.reservation:not([hidden])) input,
+  body:has(.reservation:not([hidden])) select{scroll-margin-top:22px;scroll-margin-bottom:24dvh}
+}
+@supports(height:100dvh){
+  @media(max-width:760px){
+    body:has(.reservation:not([hidden])) .backdrop,
+    body:has(.reservation:not([hidden])) .veil{height:100dvh}
+  }
+}
