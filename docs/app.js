@@ -43,6 +43,7 @@ function pathFor(page) {
 }
 
 function show(page, push = true) {
+  $('#page-loading').hidden = true;
   for (const id of ['landing', 'side', 'reservation', 'thanks', 'login', 'admin']) {
     $('#' + id).hidden = id !== page;
   }
@@ -327,4 +328,6 @@ getConfig().then(() => {
   } else {
     show('landing', false);
   }
-}).catch(() => {});
+}).catch(() => {
+  $('#page-loading').textContent = 'Unable to load this page. Please reload to try again.';
+});

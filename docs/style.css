@@ -91,3 +91,6 @@ body .veil{background:linear-gradient(0deg,rgba(36,37,39,.56),rgba(56,56,58,.3) 
  .side-page{min-height:calc(100svh - 129px);padding:24px 0}.side-options{grid-template-columns:1fr;gap:12px}.side-options button{padding:20px 14px}
  .thank-card{padding:28px 8px}.thank-card h2{font-size:44px}#thanks-copy{font-size:15px}
 }
+
+.page-loading{margin:auto;padding:64px 20px;text-align:center;color:var(--cream);font-size:14px}
+.page-loading[hidden]{display:none}
