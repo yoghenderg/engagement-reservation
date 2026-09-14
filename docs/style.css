@@ -94,3 +94,17 @@ body .veil{background:linear-gradient(0deg,rgba(36,37,39,.56),rgba(56,56,58,.3) 
 
 .page-loading{margin:auto;padding:64px 20px;text-align:center;color:var(--cream);font-size:14px}
 .page-loading[hidden]{display:none}
+
+/* Three compact groups separate people, replies, and meal totals. */
+.admin-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.admin-cards article{aspect-ratio:auto;padding:22px;display:block;border-radius:16px}
+.admin-cards h3{font:500 18px 'DM Sans',sans-serif;margin:0 0 18px;color:#641c2b}
+.admin-cards .summary-total{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.admin-cards .summary-total strong{font:500 36px 'DM Sans',sans-serif;margin:0}
+.admin-cards .summary-total span{font-size:12px;text-transform:none;letter-spacing:0}
+.summary-caption{font-size:12px;color:#7d3140;margin:0 0 18px}
+.admin-cards dl{margin:0}.admin-cards dl div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 0;border-top:1px solid #681c2d22}
+.admin-cards dt{font-size:13px;line-height:1.5}.admin-cards dd{margin:0;font:500 22px 'DM Sans',sans-serif;color:#641c2b}
+.admin-cards dl div[hidden]{display:none}.summary-help{font-size:12px;line-height:1.6;color:var(--cream);max-width:650px}
+.admin-head h2 br{display:none}.admin-head h2 em{margin-left:.15em}
+@media(max-width:760px){.admin-cards{grid-template-columns:1fr!important;gap:12px}.admin-cards article{padding:18px 20px}.admin-cards h3{font-size:16px;margin-bottom:12px}.admin-cards dl div{padding:8px 0}.admin-cards dt{font-size:13px}.admin-cards dd{font-size:20px}.summary-caption{margin-bottom:10px}.admin-head h2{font-size:38px}}

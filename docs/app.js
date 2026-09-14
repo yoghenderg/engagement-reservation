@@ -180,6 +180,11 @@ function renderAdmin(rows) {
   for (const side of ['mappilai', 'ponnu']) {
     $('#count-' + side).textContent = adminRows.reduce((sum, row) => sum + (row.side === side ? guestCount(row) : 0), 0);
   }
+  const unspecified = adminRows.reduce((sum, row) => sum + (!['mappilai', 'ponnu'].includes(row.side) ? guestCount(row) : 0), 0);
+  $('#count-unspecified').textContent = unspecified;
+  $('#unspecified-side').hidden = unspecified === 0;
+  $('#side-help').hidden = unspecified === 0;
+  $('#guest-estimate').hidden = !adminRows.some(row => row.attending === 'yes' && row.guests === '6+');
   $('#count-total').textContent = adminRows.length;
   $('#admin-empty').textContent = adminRows.length
     ? `${adminRows.length} replies received so far. ${attendingGuests} attending guests are expected.`
