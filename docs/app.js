@@ -82,6 +82,24 @@ function update() {
     el.disabled = !yes;
   }
   const total = Number($('#guests').value || 0);
+  const choice = form.elements.meal_choice.value;
+  for (const radio of form.querySelectorAll('[name="meal_choice"]')) {
+    radio.required = yes;
+    radio.disabled = !yes;
+  }
+  $('#mixed-meals').hidden = choice !== 'mixed';
+  for (const select of [$('#vegetarian_count'), $('#either_count')]) {
+    if (select.dataset.total !== String(total)) {
+      const previous = Math.min(Number(select.value), total);
+      select.innerHTML = Array.from({length:total+1}, (_,i) => `<option value="${i}">${i} ${i === 1 ? 'person' : 'people'}</option>`).join('');
+      select.value = previous;
+      select.dataset.total = total;
+    }
+  }
+  if (choice !== 'mixed') {
+    $('#vegetarian_count').value = choice === 'vegetarian' ? total : 0;
+    $('#either_count').value = choice === 'either' ? total : 0;
+  }
   const veg = Number($('#vegetarian_count').value);
   const either = Number($('#either_count').value);
   const remaining = total - veg - either;
@@ -89,6 +107,7 @@ function update() {
   $('#either_count').max = total;
   $('#either_count').setCustomValidity(yes && remaining < 0 ? 'Meal counts cannot exceed the number of guests.' : '');
   $('#nonveg-count').textContent = Math.max(0, remaining);
+  $('#meal-summary').hidden = !choice || !total;
   $('#meal-summary').textContent = remaining < 0 ? 'Please reduce the meal counts to match your guests.' : `${veg} vegetarian · ${remaining} non-vegetarian · ${either} either meal`;
   $('.submit').disabled = busy || !form.checkValidity() || $('#name').value.trim().length < 2 || $('#phone').value.replace(/\D/g, '').length < 7;
   $('.submit').firstChild.textContent = form.elements.attending.value === 'no' ? 'Send your reply ' : 'Confirm reservation ';
@@ -276,7 +295,13 @@ $('#admin-logout').onclick = () => {
 $('#summary-tab').onclick = () => setAdminTab('summary');
 $('#table-tab').onclick = () => setAdminTab('table');
 form.addEventListener('input', update);
-form.addEventListener('change', update);
+form.addEventListener('change', (event) => {
+  if (event.target.name === 'meal_choice' && event.target.value === 'mixed') {
+    $('#vegetarian_count').value = '0';
+    $('#either_count').value = '0';
+  }
+  update();
+});
 
 form.onsubmit = async (e) => {
   e.preventDefault();

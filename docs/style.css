@@ -133,3 +133,5 @@ body .veil{background:linear-gradient(0deg,rgba(36,37,39,.56),rgba(56,56,58,.3) 
 @media(max-width:760px){.header-heart .rings-icon{width:30px;height:30px}}
 
 #nonveg-count{display:block;font-size:24px;padding:15px 0}#meal-summary{grid-column:1/-1;font-size:13px;line-height:1.6}
+
+.meal-choice,#mixed-meals{grid-column:1/-1;width:100%}.meal-choice .choices{grid-template-columns:1fr}.meal-choice .choices label>span{font-size:16px;padding:18px;min-height:58px}.meal-choice legend{font-size:16px;line-height:1.5}.meal-choice .choices input:checked+span:after{content:"✓";font-size:20px}.remaining-meals #nonveg-count{display:inline;font-size:inherit;padding:0}#mixed-meals>p{line-height:1.6}#meal-summary{border-top:1px solid var(--line);padding-top:16px}
