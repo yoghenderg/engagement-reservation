@@ -49,6 +49,8 @@ h1:focus,h2:focus{outline:0}.form-heading h2:focus-visible,.thank-card h2:focus-
   .brand,.header-heart{position:relative;z-index:2}
   .header-note{position:absolute;left:50%;transform:translateX(-50%);justify-content:center;text-align:center;white-space:nowrap;max-width:58vw;z-index:1}
 }
+/* Crop her portrait at the right edge without moving his portrait or the content. */
+.backdrop:after{content:"";position:absolute;inset:0 0 0 50%;background-image:inherit;background-repeat:no-repeat;background-size:200% auto;background-position:calc(100% + 4vw) bottom;mask-image:linear-gradient(to right,transparent,black 18%);-webkit-mask-image:linear-gradient(to right,transparent,black 18%)}
 /* Let the couple photo show through the landing event card more on mobile. */
 @media(max-width:760px){
   .landing .event-details{background:rgba(224,196,150,.68)!important;border-color:rgba(213,173,117,.78);outline-color:rgba(213,173,117,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
