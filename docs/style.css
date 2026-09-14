@@ -131,3 +131,5 @@ body .veil{background:linear-gradient(0deg,rgba(36,37,39,.56),rgba(56,56,58,.3) 
 .seal .rings-icon{width:44px;height:44px}
 .date-note .rings-icon{width:30px;height:30px}
 @media(max-width:760px){.header-heart .rings-icon{width:30px;height:30px}}
+
+#nonveg-count{display:block;font-size:24px;padding:15px 0}#meal-summary{grid-column:1/-1;font-size:13px;line-height:1.6}

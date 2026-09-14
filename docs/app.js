@@ -77,10 +77,19 @@ async function reserve(push = true) {
 function update() {
   const yes = form.elements.attending.value === 'yes';
   $('#attending-fields').hidden = !yes;
-  for (const el of [$('#guests'), $('#meal')]) {
+  for (const el of [$('#guests'), $('#vegetarian_count'), $('#either_count')]) {
     el.required = yes;
     el.disabled = !yes;
   }
+  const total = Number($('#guests').value || 0);
+  const veg = Number($('#vegetarian_count').value);
+  const either = Number($('#either_count').value);
+  const remaining = total - veg - either;
+  $('#vegetarian_count').max = total;
+  $('#either_count').max = total;
+  $('#either_count').setCustomValidity(yes && remaining < 0 ? 'Meal counts cannot exceed the number of guests.' : '');
+  $('#nonveg-count').textContent = Math.max(0, remaining);
+  $('#meal-summary').textContent = remaining < 0 ? 'Please reduce the meal counts to match your guests.' : `${veg} vegetarian · ${remaining} non-vegetarian · ${either} either meal`;
   $('.submit').disabled = busy || !form.checkValidity() || $('#name').value.trim().length < 2 || $('#phone').value.replace(/\D/g, '').length < 7;
   $('.submit').firstChild.textContent = form.elements.attending.value === 'no' ? 'Send your reply ' : 'Confirm reservation ';
 }
@@ -107,7 +116,9 @@ async function saveReservation(data) {
     phone: data.phone.trim(),
     attending: data.attending,
     guests: data.attending === 'yes' ? data.guests : null,
-    meal: data.attending === 'yes' ? data.meal : null
+    vegetarian_count: data.attending === 'yes' ? Number(data.vegetarian_count) : 0,
+    either_count: data.attending === 'yes' ? Number(data.either_count) : 0,
+    non_vegetarian_count: data.attending === 'yes' ? Number(data.guests) - Number(data.vegetarian_count) - Number(data.either_count) : 0
   };
   if (!selectedSide) throw Error('Please go back and choose your side.');
   const r = await supabasePost('/rest/v1/rpc/submit_reservation', { p_reply: payload });
@@ -167,14 +178,17 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
 
+function mealCount(row, key, legacy) { return row.attending === 'yes' ? Number(row[key] ?? (row.meal === legacy ? guestCount(row) : 0)) : 0; }
+
 function renderAdmin(rows) {
   adminRows = rows || [];
   const attendingGuests = adminRows.reduce((sum, row) => sum + guestCount(row), 0);
   const declined = adminRows.filter((row) => row.attending === 'no').length;
-  const vegetarian = adminRows.reduce((sum, row) => sum + (row.attending === 'yes' && row.meal === 'vegetarian' ? guestCount(row) : 0), 0);
-  const nonVegetarian = adminRows.reduce((sum, row) => sum + (row.attending === 'yes' && row.meal === 'non-vegetarian' ? guestCount(row) : 0), 0);
+  const vegetarian = adminRows.reduce((sum, row) => sum + mealCount(row, 'vegetarian_count', 'vegetarian'), 0);
+  const nonVegetarian = adminRows.reduce((sum, row) => sum + mealCount(row, 'non_vegetarian_count', 'non-vegetarian'), 0);
   $('#count-attending').textContent = attendingGuests;
   $('#count-declined').textContent = declined;
+  $('#count-either').textContent = adminRows.reduce((sum, row) => sum + mealCount(row, 'either_count', 'either'), 0);
   $('#count-veg').textContent = vegetarian;
   $('#count-nonveg').textContent = nonVegetarian;
   for (const side of ['mappilai', 'ponnu']) {
@@ -196,7 +210,7 @@ function renderAdmin(rows) {
       <td>${escapeHtml(sideLabel(row.side))}</td>
       <td>${row.attending === 'yes' ? 'Attending' : 'Not attending'}</td>
       <td>${row.attending === 'yes' ? escapeHtml(row.guests || '1') : '—'}</td>
-      <td>${row.attending === 'yes' ? escapeHtml(row.meal || '—') : '—'}</td>
+      <td>${mealCount(row, 'vegetarian_count', 'vegetarian')}</td><td>${mealCount(row, 'non_vegetarian_count', 'non-vegetarian')}</td><td>${mealCount(row, 'either_count', 'either')}</td>
       <td>${malaysiaTime(row.created_at)}</td>
     </tr>
   `).join('');
@@ -288,7 +302,7 @@ form.onsubmit = async (e) => {
     const yes = data.attending === 'yes';
     $('#thanks-title').innerHTML = yes ? 'You’re on<br><em>our guest list.</em>' : 'You’ll be<br><em>with us in spirit.</em>';
     $('#thanks-copy').innerHTML = yes ? 'We’ll be waiting for your arrival.<br>Thank you for being part of our beginning.' : 'Thank you for letting us know.<br>We’ll miss you and keep you close in our hearts.';
-    $('#receipt').textContent = yes ? `${sideLabel(selectedSide)} · ${data.guests} ${data.guests === '1' ? 'guest' : 'guests'} · ${data.meal === 'vegetarian' ? 'Vegetarian' : 'Non-vegetarian'}` : 'Your reply has been received.';
+    $('#receipt').textContent = yes ? `${sideLabel(selectedSide)} · ${data.guests} ${data.guests === '1' ? 'guest' : 'guests'} · ${data.vegetarian_count} vegetarian · ${Number(data.guests)-Number(data.vegetarian_count)-Number(data.either_count)} non-vegetarian · ${data.either_count} either meal` : 'Your reply has been received.';
     show('thanks');
   } catch (e) {
     $('#error').textContent = e.message || 'We couldn’t save your reply. Please try again.';
