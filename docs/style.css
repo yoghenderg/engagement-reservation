@@ -49,34 +49,45 @@ h1:focus,h2:focus{outline:0}.form-heading h2:focus-visible,.thank-card h2:focus-
   .brand,.header-heart{position:relative;z-index:2}
   .header-note{position:absolute;left:50%;transform:translateX(-50%);justify-content:center;text-align:center;white-space:nowrap;max-width:58vw;z-index:1}
 }
-/* Mobile keyboard hardening for Safari/iOS and Android browsers. */
-html,body{overflow-x:hidden}
-@media(max-width:760px){
-  body:has(.reservation:not([hidden])) .shell{min-height:auto;display:block;padding-bottom:max(14px,env(safe-area-inset-bottom))}
-  body:has(.reservation:not([hidden])) main{display:block;min-height:auto}
-  body:has(.reservation:not([hidden])) footer{display:none!important}
-  body:has(.reservation:not([hidden])) .reservation{margin:14px auto 18px!important;padding-bottom:18px!important}
-  body:has(.reservation:not([hidden])) #rsvp{padding-bottom:0!important}
-  body:has(.reservation:not([hidden])) input,
-  body:has(.reservation:not([hidden])) select{scroll-margin-top:22px;scroll-margin-bottom:24dvh}
-}
-@supports(height:100dvh){
-  @media(max-width:760px){
-    body:has(.reservation:not([hidden])) .backdrop,
-    body:has(.reservation:not([hidden])) .veil{height:100dvh}
-  }
-}
-/* While typing on mobile Safari, remove tall decorative content so the active field stays visible. */
-@media(max-width:760px){
-  body.keyboard-open:has(.reservation:not([hidden])) .shell{padding-top:0!important}
-  body.keyboard-open:has(.reservation:not([hidden])) header,
-  body.keyboard-open:has(.reservation:not([hidden])) .form-heading{display:none!important}
-  body.keyboard-open:has(.reservation:not([hidden])) .reservation{margin:0 auto 10px!important;padding-top:12px!important;border-radius:0 0 22px 22px}
-  body.keyboard-open:has(.reservation:not([hidden])) .form-top{margin-bottom:14px;padding-bottom:12px}
-}
 /* Let the couple photo show through the landing event card more on mobile. */
 @media(max-width:760px){
   .landing .event-details{background:rgba(224,196,150,.68)!important;border-color:rgba(213,173,117,.78);outline-color:rgba(213,173,117,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
   .landing .event-date strong,.landing .event-venue strong{color:#5b1426}
   .landing .event-date span,.landing .event-venue p{color:#6d302d}
+}
+
+/* Stable document flow: native keyboard scrolling, no focus-time layout changes. */
+html{overflow-x:clip;scroll-behavior:auto}
+body{overflow:visible}
+.page{animation:none}
+.shell>header{flex-shrink:0;display:grid;grid-template-columns:1fr auto 1fr}
+.brand{justify-self:start}.header-heart{justify-self:end}
+.header-note{position:static;transform:none;max-width:none;justify-content:center;text-align:center;white-space:nowrap}
+body .veil{background:linear-gradient(0deg,rgba(36,37,39,.56),rgba(56,56,58,.3) 24%,rgba(80,80,82,0) 72%)!important}
+.side-page{display:grid;place-items:center;padding:40px 0;min-height:calc(100svh - 150px)}
+.side-content{width:min(560px,100%);text-align:center}.side-content .eyebrow{justify-content:center}
+.side-content h2{font-size:clamp(40px,5vw,60px)}.side-content>p{line-height:1.65}
+.side-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0}
+.side-options button{font:inherit;background:#f3e3ca;color:#641c2b;border:1px solid #d5ad75;border-radius:18px;padding:26px 14px;cursor:pointer}
+.side-options strong,.side-options span,.side-options small{display:block;color:inherit}
+.side-options strong{font-family:Georgia,serif;font-weight:400;font-size:23px}.side-options span{margin:12px 0;font-size:16px}.side-options small{font-size:12px;line-height:1.5}
+.side-options button:focus-visible{outline:3px solid #e6c28d;outline-offset:4px}
+.chosen-side{text-align:center;color:#e6c28d;font-size:13px;margin:0 0 18px}
+.admin-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+.thank-card{text-align:center;width:100%;max-width:560px}.thank-card .eyebrow{justify-content:center;font-size:10px;letter-spacing:2px;margin:20px 0 12px}
+.thank-card h2{font-size:clamp(42px,5vw,62px);line-height:1.05;margin:12px 0 22px}
+#thanks-copy{font-size:16px;line-height:1.7;max-width:400px;margin:0 auto 24px}
+.thank-card .thanks-event{font-size:14px!important;line-height:1.7;margin:0 auto 20px;padding-top:20px}
+.receipt{font-size:13px;line-height:1.6;margin:18px auto 24px;max-width:380px}
+@media(max-width:760px){
+ .shell{min-height:100svh}.shell>header{grid-template-columns:1fr auto 1fr}
+ .header-note{font-size:8px;letter-spacing:.8px;gap:5px}.header-note [lang=ta]{font-size:10px}
+ .reservation .back,.side-page .back{background:none;border:0;border-radius:0;padding:10px 0;min-height:44px;font-size:12px;margin-bottom:12px!important}
+ .reservation input,.reservation select,.admin-login input{font-size:16px;scroll-margin:20px}
+ body:has(.reservation:not([hidden])) .shell{min-height:0;display:block}
+ body:has(.reservation:not([hidden])) main{display:block}
+ body:has(.reservation:not([hidden])) footer{display:none}
+ .reservation{margin:14px auto 18px!important}
+ .side-page{min-height:calc(100svh - 129px);padding:24px 0}.side-options{grid-template-columns:1fr;gap:12px}.side-options button{padding:20px 14px}
+ .thank-card{padding:28px 8px}.thank-card h2{font-size:44px}#thanks-copy{font-size:15px}
 }

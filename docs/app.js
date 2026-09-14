@@ -9,6 +9,8 @@ const SITE_CONFIG = {
 let settings;
 let requestId = crypto.randomUUID();
 let busy = false;
+let selectedSide = '';
+const sideLabel = side => side === 'mappilai' ? 'Mappilai side' : side === 'ponnu' ? 'Ponnu side' : 'Not specified';
 let adminRows = [];
 const form = $('#rsvp');
 const adminLogin = $('#admin-login');
@@ -33,6 +35,7 @@ async function getConfig() {
 }
 
 function pathFor(page) {
+  if (page === 'side') return '/choose-side';
   if (page === 'reservation') return '/reserve';
   if (page === 'thanks') return '/thank-you';
   if (page === 'login' || page === 'admin') return '/login';
@@ -40,13 +43,14 @@ function pathFor(page) {
 }
 
 function show(page, push = true) {
-  for (const id of ['landing', 'reservation', 'thanks', 'login', 'admin']) {
+  for (const id of ['landing', 'side', 'reservation', 'thanks', 'login', 'admin']) {
     $('#' + id).hidden = id !== page;
   }
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   if (push) history.pushState({ page }, '', pathFor(page));
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (page !== 'landing') {
-    const focusId = page === 'reservation' ? 'form-title' : page === 'thanks' ? 'thanks-title' : page === 'login' ? 'login-title' : 'admin-title';
+    const focusId = page === 'side' ? 'side-title' : page === 'reservation' ? 'form-title' : page === 'thanks' ? 'thanks-title' : page === 'login' ? 'login-title' : 'admin-title';
     setTimeout(() => $('#' + focusId).focus({ preventScroll: true }), 50);
   }
 }
@@ -61,7 +65,7 @@ async function reserve(push = true) {
   try {
     const c = await getConfig();
     if (c.closed) closeNotice();
-    else show('reservation', push);
+    else show('side', push);
   } catch (e) {
     b.textContent = 'Connection unavailable · Try again';
   } finally {
@@ -86,8 +90,7 @@ async function supabasePost(path, payload) {
     headers: {
       apikey: settings.supabaseAnonKey,
       Authorization: `Bearer ${settings.supabaseAnonKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(payload)
   });
@@ -98,16 +101,17 @@ async function saveReservation(data) {
   if (!settings.supabaseUrl || !settings.supabaseAnonKey) throw Error('Reservation database is not connected yet.');
   const payload = {
     request_id: requestId,
+    side: selectedSide,
     full_name: data.name.trim(),
     phone: data.phone.trim(),
     attending: data.attending,
     guests: data.attending === 'yes' ? data.guests : null,
     meal: data.attending === 'yes' ? data.meal : null
   };
-  const r = await supabasePost('/rest/v1/reservations', payload);
-  if (r.status === 409) return { ok: true };
+  if (!selectedSide) throw Error('Please go back and choose your side.');
+  const r = await supabasePost('/rest/v1/rpc/submit_reservation', { p_reply: payload });
   if (!r.ok) throw Error('We couldn’t save your reply. Please try again.');
-  return { ok: true };
+  return r.json();
 }
 
 function adminCredentials() {
@@ -172,6 +176,9 @@ function renderAdmin(rows) {
   $('#count-declined').textContent = declined;
   $('#count-veg').textContent = vegetarian;
   $('#count-nonveg').textContent = nonVegetarian;
+  for (const side of ['mappilai', 'ponnu']) {
+    $('#count-' + side).textContent = adminRows.reduce((sum, row) => sum + (row.side === side ? guestCount(row) : 0), 0);
+  }
   $('#count-total').textContent = adminRows.length;
   $('#admin-empty').textContent = adminRows.length
     ? `${adminRows.length} replies received so far. ${attendingGuests} attending guests are expected.`
@@ -180,6 +187,7 @@ function renderAdmin(rows) {
     <tr>
       <td>${escapeHtml(row.full_name)}</td>
       <td><a href="tel:${escapeHtml(row.phone)}">${escapeHtml(row.phone)}</a></td>
+      <td>${escapeHtml(sideLabel(row.side))}</td>
       <td>${row.attending === 'yes' ? 'Attending' : 'Not attending'}</td>
       <td>${row.attending === 'yes' ? escapeHtml(row.guests || '1') : '—'}</td>
       <td>${row.attending === 'yes' ? escapeHtml(row.meal || '—') : '—'}</td>
@@ -207,35 +215,8 @@ async function loadAdmin(push = true) {
 }
 
 
-function mobileKeyboardField(el) {
-  return el && window.matchMedia('(max-width: 760px)').matches && (el.matches('input:not([type=radio]), select, textarea'));
-}
-
-function keepFieldVisible(el) {
-  if (!mobileKeyboardField(el)) return;
-  const target = el.closest('.field, fieldset') || el;
-  const run = () => target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
-  setTimeout(run, 80);
-  setTimeout(run, 320);
-  setTimeout(run, 650);
-}
-
-document.addEventListener('focusin', (e) => {
-  if (!mobileKeyboardField(e.target)) return;
-  document.body.classList.add('keyboard-open');
-  keepFieldVisible(e.target);
-});
-
-document.addEventListener('focusout', () => {
-  setTimeout(() => {
-    if (!mobileKeyboardField(document.activeElement)) document.body.classList.remove('keyboard-open');
-  }, 120);
-});
-
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => keepFieldVisible(document.activeElement));
-}
-
+// Let the browser move the focused input above its native keyboard.
+// Do not collapse content or issue competing animated scrolls on focus.
 function setAdminTab(tab) {
   const table = tab === 'table';
   $('#admin-summary').hidden = table;
@@ -245,7 +226,15 @@ function setAdminTab(tab) {
 }
 
 $('#reserve').onclick = () => reserve();
-$('#back').onclick = () => show('landing');
+$('#back').onclick = () => show('side');
+$('#side-back').onclick = () => show('landing');
+document.querySelectorAll('[data-side]').forEach(button => {
+  button.onclick = () => {
+    selectedSide = button.dataset.side;
+    $('#chosen-side').textContent = sideLabel(selectedSide);
+    show('reservation');
+  };
+});
 $('#home').onclick = () => {
   form.reset();
   update();
@@ -283,10 +272,17 @@ form.onsubmit = async (e) => {
       closeNotice();
       return;
     }
+    if (result.duplicate) {
+      $('#thanks-title').innerHTML = 'Reply already<br><em>received.</em>';
+      $('#thanks-copy').textContent = 'We already have a reply for this contact number. No second booking has been added. Please contact us if you need to change your reply.';
+      $('#receipt').textContent = 'Your existing reply is unchanged.';
+      show('thanks');
+      return;
+    }
     const yes = data.attending === 'yes';
     $('#thanks-title').innerHTML = yes ? 'You’re on<br><em>our guest list.</em>' : 'You’ll be<br><em>with us in spirit.</em>';
     $('#thanks-copy').innerHTML = yes ? 'We’ll be waiting for your arrival.<br>Thank you for being part of our beginning.' : 'Thank you for letting us know.<br>We’ll miss you and keep you close in our hearts.';
-    $('#receipt').textContent = yes ? `${data.guests} ${data.guests === '1' ? 'guest' : 'guests'} · ${data.meal === 'vegetarian' ? 'Vegetarian' : 'Non-vegetarian'}` : 'Your reply has been received.';
+    $('#receipt').textContent = yes ? `${sideLabel(selectedSide)} · ${data.guests} ${data.guests === '1' ? 'guest' : 'guests'} · ${data.meal === 'vegetarian' ? 'Vegetarian' : 'Non-vegetarian'}` : 'Your reply has been received.';
     show('thanks');
   } catch (e) {
     $('#error').textContent = e.message || 'We couldn’t save your reply. Please try again.';
@@ -311,18 +307,21 @@ adminLogin.onsubmit = async (e) => {
 };
 
 window.onpopstate = () => {
-  if (location.pathname === '/reserve') reserve(false);
+  if (location.pathname === '/choose-side' || location.pathname === '/reserve') {
+    if (location.pathname === '/reserve' && selectedSide) show('reservation', false);
+    else reserve(false);
+  }
   else if (location.pathname === '/login') loadAdmin(false);
   else show('landing', false);
 };
 
 update();
 getConfig().then(() => {
-  if (location.pathname === '/reserve') {
+  if (['/reserve', '/choose-side'].includes(location.pathname)) {
     if (settings.closed) {
       show('landing', false);
       closeNotice();
-    } else show('reservation', false);
+    } else show('side', false);
   } else if (location.pathname === '/login') {
     loadAdmin(false);
   } else {
