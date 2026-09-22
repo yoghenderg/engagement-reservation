@@ -219,7 +219,14 @@ function renderAdmin(rows) {
   $('#admin-empty').textContent = adminRows.length
     ? `${adminRows.length} replies received so far. ${attendingGuests} attending guests are expected.`
     : 'No replies have been submitted yet.';
-  $('#admin-rows').innerHTML = adminRows.map((row) => `
+  renderAdminTable();
+}
+
+function renderAdminTable() {
+  const side = $('#side-filter').value;
+  const rows = adminRows.filter(row => side === 'all' || (side === 'unspecified' ? !['mappilai', 'ponnu'].includes(row.side) : row.side === side));
+  $('#filtered-count').textContent = `Showing ${rows.length} of ${adminRows.length} replies`;
+  $('#admin-rows').innerHTML = rows.map((row) => `
     <tr>
       <td>${escapeHtml(row.full_name)}</td>
       <td><a href="tel:${escapeHtml(row.phone)}">${escapeHtml(row.phone)}</a></td>
@@ -229,7 +236,7 @@ function renderAdmin(rows) {
       <td>${mealCount(row, 'vegetarian_count', 'vegetarian')}</td><td>${mealCount(row, 'non_vegetarian_count', 'non-vegetarian')}</td><td>${mealCount(row, 'either_count', 'either')}</td>
       <td>${malaysiaTime(row.created_at)}</td>
     </tr>
-  `).join('');
+  `).join('') || '<tr><td colspan="9" class="filtered-empty">No replies for this side yet. Choose another side or All guests.</td></tr>';
 }
 
 async function loadAdmin(push = true) {
@@ -290,6 +297,7 @@ $('#admin-logout').onclick = () => {
   show('login');
 };
 $('#summary-tab').onclick = () => setAdminTab('summary');
+$('#side-filter').onchange = renderAdminTable;
 $('#table-tab').onclick = () => setAdminTab('table');
 form.addEventListener('input', update);
 form.addEventListener('change', (event) => {
