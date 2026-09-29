@@ -222,9 +222,14 @@ function renderAdmin(rows) {
   renderAdminTable();
 }
 
-function renderAdminTable() {
+function filteredAdminRows() {
   const side = $('#side-filter').value;
-  const rows = adminRows.filter(row => side === 'all' || (side === 'unspecified' ? !['mappilai', 'ponnu'].includes(row.side) : row.side === side));
+  return adminRows.filter(row => side === 'all' || (side === 'unspecified' ? !['mappilai', 'ponnu'].includes(row.side) : row.side === side));
+}
+
+function renderAdminTable() {
+  const rows = filteredAdminRows();
+  $('#download-csv').disabled = rows.length === 0;
   $('#filtered-count').textContent = `Showing ${rows.length} of ${adminRows.length} replies`;
   $('#admin-rows').innerHTML = rows.map((row) => `
     <tr>
@@ -237,6 +242,26 @@ function renderAdminTable() {
       <td>${malaysiaTime(row.created_at)}</td>
     </tr>
   `).join('') || '<tr><td colspan="9" class="filtered-empty">No replies for this side yet. Choose another side or All guests.</td></tr>';
+}
+
+function csvCell(value) {
+  let text = String(value ?? '');
+  // Prevent spreadsheet formulas in guest-provided text.
+  if (/^[\s]*[=+@-]/.test(text)) text = "'" + text;
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+function downloadAdminCsv() {
+  const rows = filteredAdminRows();
+  if (!rows.length) return;
+  const header = ['Name', 'Phone', 'Side', 'Status', 'Guests', 'Vegetarian', 'Non-vegetarian', 'Either meal', 'Registered (Malaysia time)'];
+  const records = rows.map(row => [row.full_name, row.phone, sideLabel(row.side), row.attending === 'yes' ? 'Attending' : 'Not attending', row.attending === 'yes' ? (row.guests || '1') : '', mealCount(row, 'vegetarian_count', 'vegetarian'), mealCount(row, 'non_vegetarian_count', 'non-vegetarian'), mealCount(row, 'either_count', 'either'), malaysiaTime(row.created_at)]);
+  const csv = '\uFEFF' + [header, ...records].map(record => record.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `reservations-${$('#side-filter').value}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 async function loadAdmin(push = true) {
@@ -297,6 +322,7 @@ $('#admin-logout').onclick = () => {
   show('login');
 };
 $('#summary-tab').onclick = () => setAdminTab('summary');
+$('#download-csv').onclick = downloadAdminCsv;
 $('#side-filter').onchange = renderAdminTable;
 $('#table-tab').onclick = () => setAdminTab('table');
 form.addEventListener('input', update);
